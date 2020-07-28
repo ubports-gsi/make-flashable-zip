@@ -17,9 +17,18 @@ home=`pwd`
 rm -rf buildzip
 cp ziptemplate buildzip -r
 cd buildzip
+mkdir data
 cd data
-rm rootfs.img system.img
-wget "http://oldpc/ci/view/all/job/ubports-gsi-rootfs-to-img/lastSuccessfulBuild/artifact/target-rootfs.img" -O rootfs.img
-wget "http://oldpc/ci/view/all/job/ubports-gsi-rootfs-to-img/lastSuccessfulBuild/artifact/target-system.img" -O system.img
+echo "Downloading rootfs.img"
+wget -q "http://oldpc/ci/view/all/job/ubports-gsi-rootfs-to-img/lastSuccessfulBuild/artifact/target-rootfs.img" -O rootfs.img || exit 1
+echo "Downloading system.img"
+wget -q "http://oldpc/ci/view/all/job/ubports-gsi-rootfs-to-img/lastSuccessfulBuild/artifact/target-system.img" -O system.img || exit 1
 cd ..
-zip ../../target/target.zip * -r
+sed -i "s/DEVICE/$DEVICE/g" META-INF/com/google/android/update-binary
+sed -i "s/BRANCH_NAME/$BRANCH_NAME/g" META-INF/com/google/android/update-binary
+sed -i "s/BUILD_ID/$BUILD_ID/g" META-INF/com/google/android/update-binary
+sed -i "s/JENKINS_URL/$(printf '%s\n' "$JENKINS_URL" | sed -e 's/[\/&]/\\&/g')/g" META-INF/com/google/android/update-binary
+
+
+rm ../target.zip &>/dev/null
+zip ../target.zip * -r
